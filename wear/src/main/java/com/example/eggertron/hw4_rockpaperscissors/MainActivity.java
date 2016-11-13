@@ -29,6 +29,8 @@ public class MainActivity extends WearableActivity implements WearableListView.C
     String[] elements = {"Rock", "Paper", "Scissors", "Play"};
     Adapter adapter;
     CommHandler commHandler;
+    Scores scores;
+    TextView txtScores;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +49,9 @@ public class MainActivity extends WearableActivity implements WearableListView.C
         wearableListView.setClickListener(this);
 
         commHandler = new CommHandler(this);
+        scores = new Scores();
+        txtScores = (TextView)findViewById(R.id.txtScores);
+        updateScores();
     }
 
     @Override
@@ -85,8 +90,97 @@ public class MainActivity extends WearableActivity implements WearableListView.C
     @Override
     public void onClick(WearableListView.ViewHolder viewHolder) {
         int posi = viewHolder.getAdapterPosition();
-        updateColor(posi);
-        commHandler.sendMessage(posi);
+        //updateColor(posi);
+        if (scores.me == -1) {
+            scores.me = posi;
+            wearableListView.setBackgroundColor(Color.BLUE);
+            commHandler.sendMessage(posi);
+            updateScores();
+            compareHandShapes();
+        }
+    }
+
+    private void updateScores() {
+        txtScores.setText("Wins: " + scores.wins + ", Losses: " + scores.losses + ", Ties: " +
+                            scores.ties + ", Hand: " + scores.me);
+    }
+
+    /*
+       Compares the handShapes and updates scores
+    */
+    public void compareHandShapes() {
+        if (scores.me != -1 || scores.opponent != -1) {
+            return;
+        }
+        int me = scores.me,
+                you = scores.opponent;
+
+        if (me == 0) { // I'M ROCK
+            if (you == 0) {
+                // TIE
+                scores.ties++;
+                //tieToast();
+            }
+            else if (you == 1) {
+                // LOSS
+                scores.losses++;
+                //lossToast();
+            }
+            else if (you == 2) {
+                // WIN
+                scores.wins++;
+                //winToast();
+            }
+        }
+        else if (me == 1) { // I'M PAPER
+            if (you == 0) {
+                // WIN
+                scores.wins++;
+                //winToast();
+            }
+            else if (you == 1) {
+                // TIE
+                scores.ties++;
+                //tieToast();
+            }
+            else if (you == 2) {
+                // LOSS
+                scores.losses++;
+                //lossToast();
+            }
+        }
+        else if (me == 2) { // I'M SCISSORS
+            if (you == 0) {
+                // LOSS
+                scores.losses++;
+                //lossToast();
+            }
+            else if (you == 1) {
+                // WIN
+                scores.wins++;
+                //winToast();
+            }
+            else if (you == 2) {
+                // TIE
+                scores.ties++;
+                //tieToast();
+            }
+        }
+        updateScores();
+        // send next game message.
+        //commHandler.sendMessage(NEW_GAME);
+        // reset
+        resetHands();
+    }
+
+    private void resetHands() {
+        scores.me = -1;
+        scores.opponent = -1;
+    }
+
+    public void setOpponent(int hand) {
+        scores.opponent = hand;
+        compareHandShapes();
     }
 
     public void updateColor(int colorIndex) {
@@ -95,16 +189,16 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                 wearableListView.setBackgroundColor(Color.BLUE);
                 break;
             case 1:
-                wearableListView.setBackgroundColor(Color.YELLOW);
+                wearableListView.setBackgroundColor(Color.BLUE);
                 break;
             case 2:
-                wearableListView.setBackgroundColor(Color.rgb(102, 0, 0));
+                wearableListView.setBackgroundColor(Color.BLUE);
                 break;
             case 3:
-                wearableListView.setBackgroundColor(Color.rgb(255, 102, 0));
+                wearableListView.setBackgroundColor(Color.BLUE);
                 break;
             default:
-                wearableListView.setBackgroundColor(Color.WHITE);
+                wearableListView.setBackgroundColor(Color.BLUE);
                 break;
         }
     }

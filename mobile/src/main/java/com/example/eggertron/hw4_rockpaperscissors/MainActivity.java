@@ -32,31 +32,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     CommHandler commHandler;
     Scores scores;
     Toast toast;
+    TextView txtScores;
 
     /*
         Gets the string in the TextView and changes the colorIndex.
      */
     public void ChangeColor(View view) {
         String color = ((TextView) view).getText().toString();
-        switch (color) {
-            case "Rock":
-                colorIndex = 0;
-                break;
-            case "Paper":
-                colorIndex = 1;
-                break;
-            case "Scissors":
-                colorIndex = 2;
-                break;
-            case "Play":
-                if (scores.opponent != -1) {
-                    // opponent has already played a hand
-                    compareHandShapes();
-                }
-                else {
-                    // lock up the game and wait for opponent
-                }
-                break;
+        if (scores.opponent == -1) {
+            switch (color) {
+                case "Rock":
+                    colorIndex = 0;
+                    updateScores();
+                    if (scores.opponent != -1) {
+                        // opponent has already played a hand
+                        compareHandShapes();
+                    }
+                    else {
+                        // lock up the game and wait for opponent
+                    }
+                    break;
+                case "Paper":
+                    colorIndex = 1;
+                    updateScores();
+                    if (scores.opponent != -1) {
+                        // opponent has already played a hand
+                        compareHandShapes();
+                    }
+                    else {
+                        // lock up the game and wait for opponent
+                    }
+                    break;
+                case "Scissors":
+                    colorIndex = 2;
+                    updateScores();
+                    if (scores.opponent != -1) {
+                        // opponent has already played a hand
+                        compareHandShapes();
+                    }
+                    else {
+                        // lock up the game and wait for opponent
+                    }
+                    break;
+                case "Play":
+                    break;
+            }
         }
     }
 
@@ -64,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Changes the background color based on colorIndex.
      */
     public void updateColor(int colorIndex) {
+        updateScores();
         switch (colorIndex) {
             case 0:
                 //bg.setBackgroundColor(Color.BLUE);
@@ -79,6 +100,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 bg.setBackgroundColor(Color.rgb(255, 102, 0));
                 break;
         }
+    }
+
+    private void updateScores() {
+        txtScores.setText("Wins: " + scores.wins + ", Losses: " + scores.losses +
+                            ", Ties: " + scores.ties + "Hand: " + scores.me);
     }
 
     /*
@@ -182,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         String color = ((TextView) v).getText().toString();
-        if (scores.me > -1) { // only allow one selection
+        if (scores.me < 0) { // only allow one selection
             switch (color) {
                 case "Rock":
                     colorIndex = 0;
@@ -202,6 +228,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
             }
 
+            updateScores();
             updateColor(colorIndex);
 
             commHandler.sendMessage(colorIndex);
@@ -248,6 +275,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         scissors.setOnClickListener(this);
         play.setOnClickListener(this);
         commHandler = new CommHandler(this);
+        txtScores = (TextView)findViewById(R.id.txtScores);
+        scores = new Scores();
         // Send a message to start on wear using commHandler
     }
 }

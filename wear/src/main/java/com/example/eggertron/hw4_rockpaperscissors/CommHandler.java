@@ -43,7 +43,8 @@ public class CommHandler implements DataApi.DataListener, GoogleApiClient.Connec
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == 0) { // message key expecting
-                    mainActivity.updateColor((int)msg.obj);
+                    //mainActivity.updateColor((int)msg.obj);
+                    mainActivity.setOpponent((int)msg.obj);
                 }
                 super.handleMessage(msg);
             }
