@@ -12,6 +12,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.WearableListenerService;
+
 /*
     Color Picker App: First app created for use with Android Wear
     SETUP 1:
@@ -80,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Compares the handShapes and updates scores
      */
     public void compareHandShapes() {
-        if (scores.me != RESET && scores.opponent != RESET) {
+        if (true) {
             int me = scores.me,
                     you = scores.opponent;
 
@@ -167,34 +170,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void winToast() {
         String me, you;
-        if (scores.me == 4) me = "Rock";
-        else if (scores.me == 5) me = "Paper";
-        else me = "Scissors";
-        if (scores.opponent == 0) you = "Rock";
-        else if (scores.opponent == 1) you = "Paper";
-        else you = "Scissors";
+        if (scores.me == 4) me = "Rock ✊";
+        else if (scores.me == 5) me = "Paper ✋";
+        else me = "Scissors ✌";
+        if (scores.opponent == 0) you = "Rock ✊";
+        else if (scores.opponent == 1) you = "Paper ✋";
+        else you = "Scissors ✌";
         toastMe("You Won!\n" + me + " beats " + you);
     }
 
     private void lossToast() {
         String me, you;
-        if (scores.me == 4) me = "Rock";
-        else if (scores.me == 5) me = "Paper";
-        else me = "Scissors";
-        if (scores.opponent == 0) you = "Rock";
-        else if (scores.opponent == 1) you = "Paper";
-        else you = "Scissors";
+        if (scores.me == 4) me = "Rock ✊";
+        else if (scores.me == 5) me = "Paper ✋";
+        else me = "Scissors ✌";
+        if (scores.opponent == 0) you = "Rock ✊";
+        else if (scores.opponent == 1) you = "Paper ✋";
+        else you = "Scissors ✌";
         toastMe("You Lost\n" + me + " lose to " + you);
     }
 
     private void tieToast() {
         String me, you;
-        if (scores.me == 4) me = "Rock";
-        else if (scores.me == 5) me = "Paper";
-        else me = "Scissors";
-        if (scores.opponent == 0) you = "Rock";
-        else if (scores.opponent == 1) you = "Paper";
-        else you = "Scissors";
+        if (scores.me == 4) me = "Rock ✊";
+        else if (scores.me == 5) me = "Paper ✋";
+        else me = "Scissors ✌";
+        if (scores.opponent == 0) you = "Rock ✊";
+        else if (scores.opponent == 1) you = "Paper ✋";
+        else you = "Scissors ✌";
         toastMe("Tie Game!\n" + me + " ties with " + you);
     }
 
@@ -216,20 +219,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String color = ((TextView) v).getText().toString();
         if (scores.me == RESET) { // only allow one selection
             switch (color) {
-                case "Rock":
+                case "Rock ✊":
                     scores.me = 4;
+                    updateColor(scores.me);
+                    updateScores();
+                    compareHandShapes();
+                    commHandler.sendMessage(scores.me);
                     break;
-                case "Paper":
+                case "Paper ✋":
                     scores.me = 5;
+                    updateColor(scores.me);
+                    updateScores();
+                    compareHandShapes();
+                    commHandler.sendMessage(scores.me);
                     break;
-                case "Scissors":
+                case "Scissors ✌":
                     scores.me = 6;
+                    updateColor(scores.me);
+                    updateScores();
+                    compareHandShapes();
+                    commHandler.sendMessage(scores.me);
                     break;
             }
-            updateColor(scores.me);
-            updateScores();
-            compareHandShapes();
-            commHandler.sendMessage(scores.me);
         }
         /*
             The simplest way to make the watch interact with the
@@ -304,5 +315,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         outState.putInt(MYHAND, scores.me);
         outState.putInt(YOURHAND, scores.opponent);
         super.onSaveInstanceState(outState);
+    }
+
+    public class ListenerServiceFromWear extends WearableListenerService {
+
+        private static final String HELLO_WORLD_WEAR_PATH = "/hello-world-wear";
+
+        @Override
+        public void onMessageReceived(MessageEvent messageEvent) {
+
+        /*
+         * Receive the message from wear
+         */
+            if (messageEvent.getPath().equals(HELLO_WORLD_WEAR_PATH)) {
+
+                //For example you can start an Activity
+                Intent startIntent = new Intent(this, MainActivity.class);
+                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(startIntent);
+            }
+
+        }
     }
 }
