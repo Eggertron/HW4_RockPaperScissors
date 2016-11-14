@@ -1,7 +1,11 @@
 package com.example.eggertron.hw4_rockpaperscissors;
 
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
 import android.support.wearable.view.WearableListView;
@@ -17,6 +21,11 @@ import java.util.Locale;
     Look at the comments in the mainactivity of the mobile.
  */
 public class MainActivity extends WearableActivity implements WearableListView.ClickListener {
+
+    //Create Finals
+    public final static String WINS = "WINS",
+            LOSSES = "LOSSES", TIES = "TIES",
+            MYHAND = "MYHAND", YOURHAND = "YOURHAND";
 
     private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
             new SimpleDateFormat("HH:mm", Locale.US);
@@ -52,6 +61,20 @@ public class MainActivity extends WearableActivity implements WearableListView.C
         scores = new Scores();
         txtScores = (TextView)findViewById(R.id.txtScores);
         updateScores();
+
+        int notificationID = 1;
+        //The intent allows user opens the activity on the phone
+        Intent viewIntent = new Intent(this, MainActivity.class);
+        PendingIntent viewPendingIntent = PendingIntent.getActivity(this, 0, viewIntent, 0);
+        //Use the notification builder to create a notification
+        NotificationCompat.Builder notificationBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                        .setContentTitle("Rock Paper Scissors!")
+                        .setContentText("User has picked a hand shape.")
+                        .setContentIntent(viewPendingIntent);
+        //Send the notification
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+        notificationManagerCompat.notify(notificationID, notificationBuilder.build());
     }
 
     @Override
@@ -179,8 +202,14 @@ public class MainActivity extends WearableActivity implements WearableListView.C
     }
 
     public void setOpponent(int hand) {
-        scores.opponent = hand;
-        compareHandShapes();
+        if (hand == 5) {
+            // this is not a hand shape update. its'a query
+            commHandler.sendMessage(scores.me);
+        }
+        else {
+            scores.opponent = hand;
+            compareHandShapes();
+        }
     }
 
     public void updateColor(int colorIndex) {
@@ -201,6 +230,33 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                 wearableListView.setBackgroundColor(Color.BLUE);
                 break;
         }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        scores = new Scores(savedInstanceState.getInt(WINS),
+                savedInstanceState.getInt(LOSSES),
+                savedInstanceState.getInt(TIES),
+                savedInstanceState.getInt(MYHAND),
+                savedInstanceState.getInt(YOURHAND));
+        // check if the opponent had updated their hand.
+        commHandler.sendMessage(5);
+        updateScores();
+        if (scores.me != -1) {
+            updateColor(0); // doesn't matter what color.
+        }
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+
+        outState.putInt(WINS, scores.wins);
+        outState.putInt(LOSSES, scores.losses);
+        outState.putInt(TIES, scores.ties);
+        outState.putInt(MYHAND, scores.me);
+        outState.putInt(YOURHAND, scores.opponent);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
