@@ -25,6 +25,11 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    //Create Finals
+    public final static String WINS = "WINS",
+            LOSSES = "LOSSES", TIES = "TIES",
+            MYHAND = "MYHAND", YOURHAND = "YOURHAND";
+
     ScrollView bg; // Reference to the ScrollView
     int colorIndex = 0; // saves current color index.
     int NEW_GAME = 4;
@@ -111,11 +116,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Handle the messages recieved from the game.
      */
     public void updateOpponentHand(int hand) {
-        scores.opponent = hand;
-        // check to see if I had already chose a handshape
-        if (scores.me != -1) {
-            // compare and see who wins
-            compareHandShapes();
+        if (hand == 5 && scores.me != -1) { // this was not a handshape update, this was query
+            commHandler.sendMessage(scores.me);
+        }
+        else {
+            scores.opponent = hand;
+            // check to see if I had already chose a handshape
+            if (scores.me != -1) {
+                // compare and see who wins
+                compareHandShapes();
+            }
         }
     }
 
@@ -240,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             NotificationCompat and NotificationManagerCompat.
         */
         //Send a notification to the watch
-        /*
+
         int notificationID = 1;
         //The intent allows user opens the activity on the phone
         Intent viewIntent = new Intent(this, MainActivity.class);
@@ -255,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Send the notification
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
         notificationManagerCompat.notify(notificationID, notificationBuilder.build());
-        */
+
     }
 
     // Go and update the UI of the watch face.
@@ -278,5 +288,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txtScores = (TextView)findViewById(R.id.txtScores);
         scores = new Scores();
         // Send a message to start on wear using commHandler
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        scores = new Scores(savedInstanceState.getInt(WINS),
+                savedInstanceState.getInt(LOSSES),
+                savedInstanceState.getInt(TIES),
+                savedInstanceState.getInt(MYHAND),
+                savedInstanceState.getInt(YOURHAND));
+        // check if the opponent had updated their hand.
+        commHandler.sendMessage(5);
+        updateScores();
+        if (scores.me != -1) {
+            updateColor(0); // doesn't matter what color.
+        }
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+
+        outState.putInt(WINS, scores.wins);
+        outState.putInt(LOSSES, scores.losses);
+        outState.putInt(TIES, scores.ties);
+        outState.putInt(MYHAND, scores.me);
+        outState.putInt(YOURHAND, scores.opponent);
+        super.onSaveInstanceState(outState);
     }
 }
