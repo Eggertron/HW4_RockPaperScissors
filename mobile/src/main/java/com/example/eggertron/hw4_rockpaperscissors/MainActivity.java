@@ -43,13 +43,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public void updateColor(int colorIndex) {
         switch (colorIndex) {
-            case 0:
+            case 4:
                 rock.setBackgroundColor(Color.BLUE);
                 break;
-            case 1:
+            case 5:
                 paper.setBackgroundColor(Color.BLUE);
                 break;
-            case 2:
+            case 6:
                 scissors.setBackgroundColor(Color.BLUE);
                 break;
         }
@@ -57,17 +57,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void updateScores() {
         txtScores.setText("Wins: " + scores.wins + ", Losses: " + scores.losses +
-                            ", Ties: " + scores.ties);
+                            ", Ties: " + scores.ties + ", you: " +  scores.me +
+                            ", them: " + scores.opponent);
     }
 
     /*
         Handle the messages recieved from the game.
      */
     public void updateOpponentHand(int hand) {
-        if (hand == 5) { // this was not a handshape update, this was query
+        if (hand == 7) { // this was not a handshape update, this was query
             commHandler.sendMessage(scores.me);
         }
-        else {
+        else if (hand < 3){
             scores.opponent = hand;
             // check to see if I had already chose a handshape
             // compare and see who wins
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int me = scores.me,
                     you = scores.opponent;
 
-            if (me == 0) { // I'M ROCK
+            if (me == 4) { // I'M ROCK
                 if (you == 0) {
                     // TIE
                     scores.ties++;
@@ -109,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     resetHands();
                 }
             }
-            else if (me == 1) { // I'M PAPER
+            else if (me == 5) { // I'M PAPER
                 if (you == 0) {
                     // WIN
                     scores.wins++;
@@ -135,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     resetHands();
                 }
             }
-            else if (me == 2){ // I'M SCISSORS
+            else if (me == 6){ // I'M SCISSORS
                 if (you == 0) {
                     // LOSS
                     scores.losses++;
@@ -165,15 +166,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void winToast() {
-        toastMe("You Won!");
+        String me, you;
+        if (scores.me == 4) me = "Rock";
+        else if (scores.me == 5) me = "Paper";
+        else me = "Scissors";
+        if (scores.opponent == 0) you = "Rock";
+        else if (scores.opponent == 1) you = "Paper";
+        else you = "Scissors";
+        toastMe("You Won!\n" + me + " beats " + you);
     }
 
     private void lossToast() {
-        toastMe("You Lost");
+        String me, you;
+        if (scores.me == 4) me = "Rock";
+        else if (scores.me == 5) me = "Paper";
+        else me = "Scissors";
+        if (scores.opponent == 0) you = "Rock";
+        else if (scores.opponent == 1) you = "Paper";
+        else you = "Scissors";
+        toastMe("You Lost\n" + me + " lose to " + you);
     }
 
     private void tieToast() {
-        toastMe("Tie Game!");
+        String me, you;
+        if (scores.me == 4) me = "Rock";
+        else if (scores.me == 5) me = "Paper";
+        else me = "Scissors";
+        if (scores.opponent == 0) you = "Rock";
+        else if (scores.opponent == 1) you = "Paper";
+        else you = "Scissors";
+        toastMe("Tie Game!\n" + me + " ties with " + you);
     }
 
     private void resetHands() {
@@ -195,16 +217,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (scores.me == RESET) { // only allow one selection
             switch (color) {
                 case "Rock":
-                    scores.me = 0;
+                    scores.me = 4;
                     break;
                 case "Paper":
-                    scores.me = 1;
+                    scores.me = 5;
                     break;
                 case "Scissors":
-                    scores.me = 2;
+                    scores.me = 6;
                     break;
             }
             updateColor(scores.me);
+            updateScores();
+            compareHandShapes();
             commHandler.sendMessage(scores.me);
         }
         /*
@@ -250,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txtScores = (TextView)findViewById(R.id.txtScores);
         scores = new Scores();
         resetHands();
-        commHandler.sendMessage(5); // maybe the game was already played?
+        commHandler.sendMessage(7); // maybe the game was already played?
         updateScores();
         // Send a message to start on wear using commHandler
     }
@@ -263,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 savedInstanceState.getInt(MYHAND),
                 savedInstanceState.getInt(YOURHAND));
         // check if the opponent had updated their hand.
-        commHandler.sendMessage(5);
+        commHandler.sendMessage(7);
         updateScores();
         if (scores.me != -1) {
             updateColor(0); // doesn't matter what color.

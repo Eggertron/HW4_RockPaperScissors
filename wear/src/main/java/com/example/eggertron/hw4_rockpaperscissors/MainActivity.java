@@ -1,6 +1,8 @@
 package com.example.eggertron.hw4_rockpaperscissors;
 
+import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -56,7 +58,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
         resetHands();
         txtScores = (TextView)findViewById(R.id.txtScores);
         updateScores();
-        commHandler.sendMessage(5); // maybe the game was already played?
+        commHandler.sendMessage(7); // maybe the game was already played?
 
         /*
         int notificationID = 1;
@@ -132,11 +134,32 @@ public class MainActivity extends WearableActivity implements WearableListView.C
             updateScores();
         }
         compareHandShapes();
+        int notificationId = 001;
+        // Build intent for notification content
+        Intent viewIntent = new Intent(this, MainActivity.class);
+        //viewIntent.putExtra(EXTRA_EVENT_ID, eventId);
+        PendingIntent viewPendingIntent =
+                PendingIntent.getActivity(this, 0, viewIntent, 0);
+
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.open_on_phone)
+                        .setContentTitle("RockPaperScissors!")
+                        .setContentText("Let's Play!")
+                        .setContentIntent(viewPendingIntent);
+
+        // Get an instance of the NotificationManager service
+        NotificationManagerCompat notificationManager =
+                NotificationManagerCompat.from(this);
+
+        // Build the notification and issues it with notification manager.
+        notificationManager.notify(notificationId, notificationBuilder.build());
     }
 
     private void updateScores() {
         txtScores.setText("Wins: " + scores.wins + ", Losses: " + scores.losses + ", Ties: " +
-                            scores.ties);
+                            scores.ties + ", you: " +  scores.me +
+                ", them: " + scores.opponent);
     }
 
     /*
@@ -148,72 +171,72 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                 you = scores.opponent;
 
             if (me == 0) { // I'M ROCK
-                if (you == 0) {
+                if (you == 4) {
                     // TIE
                     scores.ties++;
-                    //tieToast();
                     updateScores();
                     resetHands();
+                    tieToast();
                 }
-                else if (you == 1) {
+                else if (you == 5) {
                     // LOSS
                     scores.losses++;
-                    //lossToast();
                     updateScores();
                     resetHands();
+                    lossToast();
                 }
-                else if (you == 2) {
+                else if (you == 6) {
                     // WIN
                     scores.wins++;
-                    //winToast();
                     updateScores();
                     resetHands();
+                    winToast();
                 }
             }
             else if (me == 1) { // I'M PAPER
-                if (you == 0) {
+                if (you == 4) {
                     // WIN
                     scores.wins++;
-                    //winToast();
                     updateScores();
                     resetHands();
+                    winToast();
                 }
-                else if (you == 1) {
+                else if (you == 5) {
                     // TIE
                     scores.ties++;
-                    //tieToast();
                     updateScores();
                     resetHands();
+                    tieToast();
                 }
-                else if (you == 2) {
+                else if (you == 6) {
                     // LOSS
                     scores.losses++;
-                    //lossToast();
                     updateScores();
                     resetHands();
+                    lossToast();
                 }
             }
             else if (me == 2) { // I'M SCISSORS
-                if (you == 0) {
+                if (you == 4) {
                     // LOSS
                     scores.losses++;
-                    //lossToast();
                     updateScores();
                     resetHands();
+                    lossToast();
                 }
-                else if (you == 1) {
+                else if (you == 5) {
                     // WIN
                     scores.wins++;
-                    //winToast();
                     updateScores();
                     resetHands();
+                    winToast();
                 }
-                else if (you == 2){
+                else if (you == 6){
                     // TIE
                     scores.ties++;
-                    //tieToast();
                     updateScores();
                     resetHands();
+                    tieToast();
                 }
             }
         }
@@ -227,11 +250,11 @@ public class MainActivity extends WearableActivity implements WearableListView.C
     }
 
     public void setOpponent(int hand) {
-        if (hand == 5) {
+        if (hand == 7) {
             // this is not a hand shape update. its'a query
             commHandler.sendMessage(scores.me);
         }
-        else {
+        else if (hand > 3){
             scores.opponent = hand;
             compareHandShapes();
         }
@@ -265,7 +288,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                 savedInstanceState.getInt(MYHAND),
                 savedInstanceState.getInt(YOURHAND));
         // check if the opponent had updated their hand.
-        commHandler.sendMessage(5);
+        commHandler.sendMessage(7);
         updateScores();
         if (scores.me != RESET) {
             updateColor(0); // doesn't matter what color.
@@ -282,6 +305,56 @@ public class MainActivity extends WearableActivity implements WearableListView.C
         outState.putInt(MYHAND, scores.me);
         outState.putInt(YOURHAND, scores.opponent);
         super.onSaveInstanceState(outState);
+    }
+
+    public void winToast() {
+        String me, you;
+        if (scores.me == 0) me = "Rock";
+        else if (scores.me == 1) me = "Paper";
+        else me = "Scissors";
+        if (scores.opponent == 4) you = "Rock";
+        else if (scores.opponent == 5) you = "Paper";
+        else you = "Scissors";
+        showDialog("You Win!\n" + me + " beats " + you);
+    }
+
+    public void lossToast() {
+        String me, you;
+        if (scores.me == 0) me = "Rock";
+        else if (scores.me == 1) me = "Paper";
+        else me = "Scissors";
+        if (scores.opponent == 4) you = "Rock";
+        else if (scores.opponent == 5) you = "Paper";
+        else you = "Scissors";
+        showDialog("You Lose!\n" + me + " loss to " + you);
+    }
+
+    public void tieToast() {
+        String me, you;
+        if (scores.me == 0) me = "Rock";
+        else if (scores.me == 1) me = "Paper";
+        else me = "Scissors";
+        if (scores.opponent == 4) you = "Rock";
+        else if (scores.opponent == 5) you = "Paper";
+        else you = "Scissors";
+        showDialog("Tie game!\n" + me + " equals " + you);
+    }
+
+    public void showDialog(String msg) {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        builder1.setMessage(msg);
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "Ok",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
     }
 
     @Override
