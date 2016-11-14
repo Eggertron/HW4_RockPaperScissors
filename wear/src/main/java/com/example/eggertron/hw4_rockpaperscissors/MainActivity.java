@@ -27,19 +27,15 @@ public class MainActivity extends WearableActivity implements WearableListView.C
             LOSSES = "LOSSES", TIES = "TIES",
             MYHAND = "MYHAND", YOURHAND = "YOURHAND";
 
-    private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
-            new SimpleDateFormat("HH:mm", Locale.US);
-
     private BoxInsetLayout mContainerView;
-    //private TextView mTextView;
-    //private TextView mClockView;
     WearableListView wearableListView;
     // Coming back from the end of Adapter.java
-    String[] elements = {"Rock", "Paper", "Scissors", "Play"};
+    String[] elements = {"Rock", "Paper", "Scissors"};
     Adapter adapter;
     CommHandler commHandler;
     Scores scores;
     TextView txtScores;
+    private final int RESET = 99;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +44,6 @@ public class MainActivity extends WearableActivity implements WearableListView.C
         setAmbientEnabled();
 
         mContainerView = (BoxInsetLayout) findViewById(R.id.container);
-        //mTextView = (TextView) findViewById(R.id.text);
-        //mClockView = (TextView) findViewById(R.id.clock);
         wearableListView = (WearableListView) findViewById(R.id.wearable_list);
         // Initialize the adapter
         adapter = new Adapter(this, elements);
@@ -59,9 +53,12 @@ public class MainActivity extends WearableActivity implements WearableListView.C
 
         commHandler = new CommHandler(this);
         scores = new Scores();
+        resetHands();
         txtScores = (TextView)findViewById(R.id.txtScores);
         updateScores();
+        commHandler.sendMessage(5); // maybe the game was already played?
 
+        /*
         int notificationID = 1;
         //The intent allows user opens the activity on the phone
         Intent viewIntent = new Intent(this, MainActivity.class);
@@ -74,7 +71,29 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                         .setContentIntent(viewPendingIntent);
         //Send the notification
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
-        notificationManagerCompat.notify(notificationID, notificationBuilder.build());
+        //notificationManagerCompat.notify(notificationID, notificationBuilder.build());
+        */
+
+        int notificationId = 001;
+        // Build intent for notification content
+        Intent viewIntent = new Intent(this, MainActivity.class);
+        //viewIntent.putExtra(EXTRA_EVENT_ID, eventId);
+        PendingIntent viewPendingIntent =
+                PendingIntent.getActivity(this, 0, viewIntent, 0);
+
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.open_on_phone)
+                        .setContentTitle("RockPaperScissors!")
+                        .setContentText("Let's Play!")
+                        .setContentIntent(viewPendingIntent);
+
+        // Get an instance of the NotificationManager service
+        NotificationManagerCompat notificationManager =
+                NotificationManagerCompat.from(this);
+
+        // Build the notification and issues it with notification manager.
+        notificationManager.notify(notificationId, notificationBuilder.build());
     }
 
     @Override
@@ -98,107 +117,113 @@ public class MainActivity extends WearableActivity implements WearableListView.C
     private void updateDisplay() {
         if (isAmbient()) {
             mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
-            //mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
-            //mTextView.setTextColor(getResources().getColor(android.R.color.white));
-            //mClockView.setVisibility(View.VISIBLE);
-
-            //mClockView.setText(AMBIENT_DATE_FORMAT.format(new Date()));
         } else {
             mContainerView.setBackground(null);
-            //mTextView.setTextColor(getResources().getColor(android.R.color.black));
-            //mClockView.setVisibility(View.GONE);
         }
     }
 
     @Override
     public void onClick(WearableListView.ViewHolder viewHolder) {
         int posi = viewHolder.getAdapterPosition();
-        //updateColor(posi);
-        if (scores.me == -1) {
+        if (scores.me == RESET) {
             scores.me = posi;
             wearableListView.setBackgroundColor(Color.BLUE);
-            commHandler.sendMessage(posi);
+            commHandler.sendMessage(scores.me);
             updateScores();
-            compareHandShapes();
         }
+        compareHandShapes();
     }
 
     private void updateScores() {
         txtScores.setText("Wins: " + scores.wins + ", Losses: " + scores.losses + ", Ties: " +
-                            scores.ties + ", Hand: " + scores.me);
+                            scores.ties);
     }
 
     /*
        Compares the handShapes and updates scores
     */
     public void compareHandShapes() {
-        if (scores.me != -1 || scores.opponent != -1) {
-            return;
-        }
-        int me = scores.me,
+        if (scores.me != RESET && scores.opponent != RESET) {
+            int me = scores.me,
                 you = scores.opponent;
 
-        if (me == 0) { // I'M ROCK
-            if (you == 0) {
-                // TIE
-                scores.ties++;
-                //tieToast();
+            if (me == 0) { // I'M ROCK
+                if (you == 0) {
+                    // TIE
+                    scores.ties++;
+                    //tieToast();
+                    updateScores();
+                    resetHands();
+                }
+                else if (you == 1) {
+                    // LOSS
+                    scores.losses++;
+                    //lossToast();
+                    updateScores();
+                    resetHands();
+                }
+                else if (you == 2) {
+                    // WIN
+                    scores.wins++;
+                    //winToast();
+                    updateScores();
+                    resetHands();
+                }
             }
-            else if (you == 1) {
-                // LOSS
-                scores.losses++;
-                //lossToast();
+            else if (me == 1) { // I'M PAPER
+                if (you == 0) {
+                    // WIN
+                    scores.wins++;
+                    //winToast();
+                    updateScores();
+                    resetHands();
+                }
+                else if (you == 1) {
+                    // TIE
+                    scores.ties++;
+                    //tieToast();
+                    updateScores();
+                    resetHands();
+                }
+                else if (you == 2) {
+                    // LOSS
+                    scores.losses++;
+                    //lossToast();
+                    updateScores();
+                    resetHands();
+                }
             }
-            else if (you == 2) {
-                // WIN
-                scores.wins++;
-                //winToast();
+            else if (me == 2) { // I'M SCISSORS
+                if (you == 0) {
+                    // LOSS
+                    scores.losses++;
+                    //lossToast();
+                    updateScores();
+                    resetHands();
+                }
+                else if (you == 1) {
+                    // WIN
+                    scores.wins++;
+                    //winToast();
+                    updateScores();
+                    resetHands();
+                }
+                else if (you == 2){
+                    // TIE
+                    scores.ties++;
+                    //tieToast();
+                    updateScores();
+                    resetHands();
+                }
             }
         }
-        else if (me == 1) { // I'M PAPER
-            if (you == 0) {
-                // WIN
-                scores.wins++;
-                //winToast();
-            }
-            else if (you == 1) {
-                // TIE
-                scores.ties++;
-                //tieToast();
-            }
-            else if (you == 2) {
-                // LOSS
-                scores.losses++;
-                //lossToast();
-            }
-        }
-        else if (me == 2) { // I'M SCISSORS
-            if (you == 0) {
-                // LOSS
-                scores.losses++;
-                //lossToast();
-            }
-            else if (you == 1) {
-                // WIN
-                scores.wins++;
-                //winToast();
-            }
-            else if (you == 2) {
-                // TIE
-                scores.ties++;
-                //tieToast();
-            }
-        }
-        updateScores();
-        // send next game message.
-        //commHandler.sendMessage(NEW_GAME);
-        // reset
-        resetHands();
+
     }
 
     private void resetHands() {
-        scores.me = -1;
-        scores.opponent = -1;
+        scores.me = RESET;
+        scores.opponent = RESET;
+        wearableListView.setBackgroundColor(Color.WHITE);
     }
 
     public void setOpponent(int hand) {
@@ -242,7 +267,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
         // check if the opponent had updated their hand.
         commHandler.sendMessage(5);
         updateScores();
-        if (scores.me != -1) {
+        if (scores.me != RESET) {
             updateColor(0); // doesn't matter what color.
         }
         super.onRestoreInstanceState(savedInstanceState);

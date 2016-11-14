@@ -25,7 +25,6 @@
                 android:textSize="30dp"
                 android:textAlignment="center"
                 android:padding="30dp"
-                android:onClick="ChangeColor"
                 android:id="@+id/rock"/>
             <TextView
                 android:layout_width="match_parent"
@@ -35,7 +34,6 @@
                 android:textSize="30dp"
                 android:textAlignment="center"
                 android:padding="30dp"
-                android:onClick="ChangeColor"
                 android:id="@+id/paper"/>
             <TextView
                 android:layout_width="match_parent"
@@ -45,18 +43,7 @@
                 android:textSize="30dp"
                 android:textAlignment="center"
                 android:padding="30dp"
-                android:onClick="ChangeColor"
                 android:id="@+id/scissors"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-                android:layout_weight="1"
-                android:text="Play"
-                android:textSize="30dp"
-                android:textAlignment="center"
-                android:padding="30dp"
-                android:onClick="ChangeColor"
-                android:id="@+id/play"/>
         </LinearLayout>
     </ScrollView>
 
