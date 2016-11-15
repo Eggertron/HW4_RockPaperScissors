@@ -61,7 +61,7 @@ public class CommHandler implements DataApi.DataListener, GoogleApiClient.Connec
         protected Void doInBackground(Integer... params) {
             // the forward slash indicates that the key is for the root of the datamap
             PutDataMapRequest putDataMapRequest = PutDataMapRequest.create("/" + CURRENT_COLOR_INDEX);
-            putDataMapRequest.getDataMap().putInt(CURRENT_COLOR_INDEX, params[0]);
+            putDataMapRequest.getDataMap().putInt(CURRENT_COLOR_INDEX + "A", params[0]);
             //putDataMapRequest.getDataMap().putString("a different key", "somestring here");
             PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
             Wearable.DataApi.putDataItem(googleApiClient, putDataRequest);

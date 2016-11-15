@@ -38,7 +38,8 @@ public class MainActivity extends WearableActivity implements WearableListView.C
     CommHandler commHandler;
     Scores scores;
     TextView txtScores;
-    private final int RESET = 99;
+    private final int RESET = 99, aRock = 70, bRock = 60,
+            aPaper = 71, bPaper = 61, aScissors = 72, bScissors = 62;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +60,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
         resetHands();
         txtScores = (TextView)findViewById(R.id.txtScores);
         updateScores();
-        commHandler.sendMessage(7); // maybe the game was already played?
+        commHandler.sendMessage(8); // maybe the game was already played?
 
         sendNotification();
     }
@@ -79,7 +80,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
         //Send the notification
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
         //notificationManagerCompat.notify(notificationID, notificationBuilder.build());
-        */
+
 
         int notificationId = 001;
         // Build intent for notification content
@@ -105,6 +106,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
         Intent intent = new Intent(this, ConfirmationActivity.class);
         intent.putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE, ConfirmationActivity.OPEN_ON_PHONE_ANIMATION);
         startActivity(intent);
+        */
     }
 
     @Override
@@ -137,19 +139,21 @@ public class MainActivity extends WearableActivity implements WearableListView.C
     public void onClick(WearableListView.ViewHolder viewHolder) {
         int posi = viewHolder.getAdapterPosition();
         if (scores.me == RESET) {
-            scores.me = posi;
+            if (posi == 0) scores.me = bRock;
+            else if (posi == 1) scores.me = bPaper;
+            else if (posi == 2) scores.me = bScissors;
             wearableListView.setBackgroundColor(Color.BLUE);
             commHandler.sendMessage(scores.me);
+            //commHandler.sendMessage(8);
             updateScores();
         }
-        sendNotification();
+        //sendNotification();
         compareHandShapes();
     }
 
     private void updateScores() {
         txtScores.setText("Wins: " + scores.wins + ", Losses: " + scores.losses + ", Ties: " +
-                            scores.ties + ", you: " +  scores.me +
-                ", them: " + scores.opponent);
+                            scores.ties);
     }
 
     /*
@@ -160,8 +164,8 @@ public class MainActivity extends WearableActivity implements WearableListView.C
             int me = scores.me,
                 you = scores.opponent;
 
-            if (me == 0) { // I'M ROCK
-                if (you == 4) {
+            if (me == bRock) { // I'M ROCK
+                if (you == aRock) {
                     // TIE
                     scores.ties++;
                     int temp1 = scores.me, temp2 = scores.opponent;
@@ -169,7 +173,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                     resetHands();
                     tieToast(temp1, temp2);
                 }
-                else if (you == 5) {
+                else if (you == aPaper) {
                     // LOSS
                     scores.losses++;
                     int temp1 = scores.me, temp2 = scores.opponent;
@@ -177,7 +181,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                     resetHands();
                     lossToast(temp1, temp2);
                 }
-                else if (you == 6) {
+                else if (you == aScissors) {
                     // WIN
                     scores.wins++;
                     int temp1 = scores.me, temp2 = scores.opponent;
@@ -186,8 +190,8 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                     winToast(temp1, temp2);
                 }
             }
-            else if (me == 1) { // I'M PAPER
-                if (you == 4) {
+            else if (me == bPaper) { // I'M PAPER
+                if (you == aRock) {
                     // WIN
                     scores.wins++;
                     int temp1 = scores.me, temp2 = scores.opponent;
@@ -195,7 +199,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                     resetHands();
                     winToast(temp1, temp2);
                 }
-                else if (you == 5) {
+                else if (you == aPaper) {
                     // TIE
                     scores.ties++;
                     int temp1 = scores.me, temp2 = scores.opponent;
@@ -203,7 +207,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                     resetHands();
                     tieToast(temp1, temp2);
                 }
-                else if (you == 6) {
+                else if (you == aScissors) {
                     // LOSS
                     scores.losses++;
                     int temp1 = scores.me, temp2 = scores.opponent;
@@ -212,8 +216,8 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                     lossToast(temp1, temp2);
                 }
             }
-            else if (me == 2) { // I'M SCISSORS
-                if (you == 4) {
+            else if (me == bScissors) { // I'M SCISSORS
+                if (you == aRock) {
                     // LOSS
                     scores.losses++;
                     int temp1 = scores.me, temp2 = scores.opponent;
@@ -221,7 +225,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                     resetHands();
                     lossToast(temp1, temp2);
                 }
-                else if (you == 5) {
+                else if (you == aPaper) {
                     // WIN
                     scores.wins++;
                     int temp1 = scores.me, temp2 = scores.opponent;
@@ -229,7 +233,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                     resetHands();
                     winToast(temp1, temp2);
                 }
-                else if (you == 6){
+                else if (you == aScissors){
                     // TIE
                     scores.ties++;
                     int temp1 = scores.me, temp2 = scores.opponent;
@@ -253,7 +257,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
             // this is not a hand shape update. its'a query
             commHandler.sendMessage(scores.me);
         }
-        else if (hand > 3){
+        else if (hand >= aRock || hand <= aScissors){
             scores.opponent = hand;
             compareHandShapes();
         }
@@ -287,7 +291,7 @@ public class MainActivity extends WearableActivity implements WearableListView.C
                 savedInstanceState.getInt(MYHAND),
                 savedInstanceState.getInt(YOURHAND));
         // check if the opponent had updated their hand.
-        commHandler.sendMessage(7);
+        commHandler.sendMessage(8);
         updateScores();
         if (scores.me != RESET) {
             updateColor(0); // doesn't matter what color.
@@ -308,33 +312,33 @@ public class MainActivity extends WearableActivity implements WearableListView.C
 
     public void winToast(int my, int them) {
         String me, you;
-        if (my == 0) me = "Rock ✊";
-        else if (my == 1) me = "Paper ✋";
+        if (my == bRock) me = "Rock ✊";
+        else if (my == bPaper) me = "Paper ✋";
         else me = "Scissors ✌";
-        if (them == 4) you = "Rock ✊";
-        else if (them == 5) you = "Paper ✋";
+        if (them == aRock) you = "Rock ✊";
+        else if (them == aPaper) you = "Paper ✋";
         else you = "Scissors ✌";
         showDialog("You Win!\n" + me + " beats " + you);
     }
 
     public void lossToast(int my, int them) {
         String me, you;
-        if (my == 0) me = "Rock ✊";
-        else if (my == 1) me = "Paper ✋";
+        if (my == bRock) me = "Rock ✊";
+        else if (my == bPaper) me = "Paper ✋";
         else me = "Scissors ✌";
-        if (them == 4) you = "Rock ✊";
-        else if (them == 5) you = "Paper ✋";
+        if (them == aRock) you = "Rock ✊";
+        else if (them == aPaper) you = "Paper ✋";
         else you = "Scissors ✌";
         showDialog("You Lose!\n" + me + " loss to " + you);
     }
 
     public void tieToast(int my, int them) {
         String me, you;
-        if (my == 0) me = "Rock ✊";
-        else if (my == 1) me = "Paper ✋";
+        if (my == bRock) me = "Rock ✊";
+        else if (my == bPaper) me = "Paper ✋";
         else me = "Scissors ✌";
-        if (them == 4) you = "Rock ✊";
-        else if (them == 5) you = "Paper ✋";
+        if (them == aRock) you = "Rock ✊";
+        else if (them == aPaper) you = "Paper ✋";
         else you = "Scissors ✌";
         showDialog("Tie game!\n" + me + " equals " + you);
     }

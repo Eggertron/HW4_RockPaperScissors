@@ -39,20 +39,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Scores scores;
     Toast toast;
     TextView txtScores;
-    private final int RESET = 99;
+    private final int RESET = 99, aRock = 70, bRock = 60,
+                        aPaper = 71, bPaper = 61, aScissors = 72, bScissors = 62;
 
     /*
         Changes the background color based on colorIndex.
      */
     public void updateColor(int colorIndex) {
         switch (colorIndex) {
-            case 4:
+            case aRock:
                 rock.setBackgroundColor(Color.BLUE);
                 break;
-            case 5:
+            case aPaper:
                 paper.setBackgroundColor(Color.BLUE);
                 break;
-            case 6:
+            case aScissors:
                 scissors.setBackgroundColor(Color.BLUE);
                 break;
         }
@@ -60,18 +61,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void updateScores() {
         txtScores.setText("Wins: " + scores.wins + ", Losses: " + scores.losses +
-                            ", Ties: " + scores.ties + ", you: " +  scores.me +
-                            ", them: " + scores.opponent);
+                            ", Ties: " + scores.ties);
     }
 
     /*
         Handle the messages recieved from the game.
      */
     public void updateOpponentHand(int hand) {
-        if (hand == 7) { // this was not a handshape update, this was query
+        if (hand == 8) { // this was not a handshape update, this was query
             commHandler.sendMessage(scores.me);
         }
-        else if (hand < 3){
+        else if (hand >= bRock || hand <= bScissors){
             scores.opponent = hand;
             // check to see if I had already chose a handshape
             // compare and see who wins
@@ -87,8 +87,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int me = scores.me,
                     you = scores.opponent;
 
-            if (me == 4) { // I'M ROCK
-                if (you == 0) {
+            if (me == aRock) { // I'M ROCK
+                if (you == bRock) {
                     // TIE
                     scores.ties++;
                     tieToast();
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     updateScores();
                     resetHands();
                 }
-                else if (you == 1) {
+                else if (you == bPaper) {
                     // LOSS
                     scores.losses++;
                     lossToast();
@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     updateScores();
                     resetHands();
                 }
-                else if (you == 2) {
+                else if (you == bScissors) {
                     // WIN
                     scores.wins++;
                     winToast();
@@ -113,8 +113,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     resetHands();
                 }
             }
-            else if (me == 5) { // I'M PAPER
-                if (you == 0) {
+            else if (me == aPaper) { // I'M PAPER
+                if (you == bRock) {
                     // WIN
                     scores.wins++;
                     winToast();
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     updateScores();
                     resetHands();
                 }
-                else if (you == 1) {
+                else if (you == bPaper) {
                     // TIE
                     scores.ties++;
                     tieToast();
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     updateScores();
                     resetHands();
                 }
-                else if (you == 2) {
+                else if (you == bScissors) {
                     // LOSS
                     scores.losses++;
                     lossToast();
@@ -139,8 +139,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     resetHands();
                 }
             }
-            else if (me == 6){ // I'M SCISSORS
-                if (you == 0) {
+            else if (me == aScissors){ // I'M SCISSORS
+                if (you == bRock) {
                     // LOSS
                     scores.losses++;
                     lossToast();
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     updateScores();
                     resetHands();
                 }
-                else if (you == 1) {
+                else if (you == bPaper) {
                     // WIN
                     scores.wins++;
                     winToast();
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     updateScores();
                     resetHands();
                 }
-                else if (you == 2) {
+                else if (you == bScissors) {
                     // TIE
                     scores.ties++;
                     tieToast();
@@ -170,33 +170,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void winToast() {
         String me, you;
-        if (scores.me == 4) me = "Rock ✊";
-        else if (scores.me == 5) me = "Paper ✋";
+        if (scores.me == aRock) me = "Rock ✊";
+        else if (scores.me == aPaper) me = "Paper ✋";
         else me = "Scissors ✌";
-        if (scores.opponent == 0) you = "Rock ✊";
-        else if (scores.opponent == 1) you = "Paper ✋";
+        if (scores.opponent == bRock) you = "Rock ✊";
+        else if (scores.opponent == bPaper) you = "Paper ✋";
         else you = "Scissors ✌";
         toastMe("You Won!\n" + me + " beats " + you);
     }
 
     private void lossToast() {
         String me, you;
-        if (scores.me == 4) me = "Rock ✊";
-        else if (scores.me == 5) me = "Paper ✋";
+        if (scores.me == aRock) me = "Rock ✊";
+        else if (scores.me == aPaper) me = "Paper ✋";
         else me = "Scissors ✌";
-        if (scores.opponent == 0) you = "Rock ✊";
-        else if (scores.opponent == 1) you = "Paper ✋";
+        if (scores.opponent == bRock) you = "Rock ✊";
+        else if (scores.opponent == bPaper) you = "Paper ✋";
         else you = "Scissors ✌";
         toastMe("You Lost\n" + me + " lose to " + you);
     }
 
     private void tieToast() {
         String me, you;
-        if (scores.me == 4) me = "Rock ✊";
-        else if (scores.me == 5) me = "Paper ✋";
+        if (scores.me == aRock) me = "Rock ✊";
+        else if (scores.me == aPaper) me = "Paper ✋";
         else me = "Scissors ✌";
-        if (scores.opponent == 0) you = "Rock ✊";
-        else if (scores.opponent == 1) you = "Paper ✋";
+        if (scores.opponent == bRock) you = "Rock ✊";
+        else if (scores.opponent == bPaper) you = "Paper ✋";
         else you = "Scissors ✌";
         toastMe("Tie Game!\n" + me + " ties with " + you);
     }
@@ -218,30 +218,64 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         String color = ((TextView) v).getText().toString();
         if (scores.me == RESET) { // only allow one selection
+            if (color.equals("Rock ✊")) {
+                    scores.me = aRock;
+                    updateColor(scores.me);
+                    commHandler.sendMessage(scores.me);
+                    //commHandler.sendMessage(7);
+                    updateScores();
+                    compareHandShapes();
+            } else if (color.equals("Paper ✋")) {
+                scores.me = aPaper;
+                updateColor(scores.me);
+                commHandler.sendMessage(scores.me);
+                //commHandler.sendMessage(7);
+                updateScores();
+                compareHandShapes();
+            } else if (color.equals("Scissors ✌")) {
+                scores.me = aScissors;
+                updateColor(scores.me);
+                commHandler.sendMessage(scores.me);
+                //commHandler.sendMessage(7);
+                updateScores();
+                compareHandShapes();
+            }
+        }
+        /*
+        if (scores.me == RESET) { // only allow one selection
             switch (color) {
                 case "Rock ✊":
                     scores.me = 4;
                     updateColor(scores.me);
+                    commHandler.sendMessage(scores.me);
+                    commHandler.sendMessage(7);
                     updateScores();
                     compareHandShapes();
-                    commHandler.sendMessage(scores.me);
                     break;
                 case "Paper ✋":
                     scores.me = 5;
                     updateColor(scores.me);
+                    commHandler.sendMessage(scores.me);
+                    commHandler.sendMessage(7);
                     updateScores();
                     compareHandShapes();
-                    commHandler.sendMessage(scores.me);
                     break;
                 case "Scissors ✌":
                     scores.me = 6;
                     updateColor(scores.me);
+                    commHandler.sendMessage(scores.me);
+                    commHandler.sendMessage(7);
                     updateScores();
                     compareHandShapes();
-                    commHandler.sendMessage(scores.me);
                     break;
             }
         }
+        */
+
+
+    }
+
+    private void sendNotification() {
         /*
             The simplest way to make the watch interact with the
             mobile is using notification. You don’t even have to code
@@ -259,14 +293,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.cast_ic_notification_small_icon)
                         .setContentTitle("RockPaperScissors!")
-                        .setContentText("Let's Play!" + color)
+                        .setContentText("Let's Play!")
                         .setContentIntent(viewPendingIntent);
         //Send the notification
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
         notificationManagerCompat.notify(notificationID, notificationBuilder.build());
-
     }
-
     // Go and update the UI of the watch face.
 
     @Override
@@ -300,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // check if the opponent had updated their hand.
         commHandler.sendMessage(7);
         updateScores();
-        if (scores.me != -1) {
+        if (scores.me != RESET) {
             updateColor(0); // doesn't matter what color.
         }
         super.onRestoreInstanceState(savedInstanceState);
@@ -309,6 +341,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onSaveInstanceState(Bundle outState) {
 
+        sendNotification();
         outState.putInt(WINS, scores.wins);
         outState.putInt(LOSSES, scores.losses);
         outState.putInt(TIES, scores.ties);

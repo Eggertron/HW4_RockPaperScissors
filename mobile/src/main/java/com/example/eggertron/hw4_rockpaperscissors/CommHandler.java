@@ -89,7 +89,7 @@ public class CommHandler implements DataApi.DataListener, GoogleApiClient.Connec
                 DataItem item = event.getDataItem();
                 if (item.getUri().getPath().compareTo("/" + CURRENT_COLOR_INDEX) == 0) {
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-                    int colorIndex = dataMap.getInt(CURRENT_COLOR_INDEX);
+                    int colorIndex = dataMap.getInt(CURRENT_COLOR_INDEX + "A");
                     Message msg = UIHandler.obtainMessage(0, colorIndex); // with message key 0
                     msg.sendToTarget(); // sends from one thread to the other thread.
                 }
