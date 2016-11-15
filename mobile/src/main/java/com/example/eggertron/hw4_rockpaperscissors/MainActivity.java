@@ -12,7 +12,12 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 
 /*
@@ -341,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onSaveInstanceState(Bundle outState) {
 
-        sendNotification();
+        //sendNotification();
         outState.putInt(WINS, scores.wins);
         outState.putInt(LOSSES, scores.losses);
         outState.putInt(TIES, scores.ties);
@@ -350,24 +355,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onSaveInstanceState(outState);
     }
 
-    public class ListenerServiceFromWear extends WearableListenerService {
+    public void sendMessage(final String path, final String text, final GoogleApiClient mApiClient ) {
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes( mApiClient ).await();
+                for(Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            mApiClient, node.getId(), path, text.getBytes() ).await();
+                }
 
-        private static final String HELLO_WORLD_WEAR_PATH = "/hello-world-wear";
-
-        @Override
-        public void onMessageReceived(MessageEvent messageEvent) {
-
-        /*
-         * Receive the message from wear
-         */
-            if (messageEvent.getPath().equals(HELLO_WORLD_WEAR_PATH)) {
-
-                //For example you can start an Activity
-                Intent startIntent = new Intent(this, MainActivity.class);
-                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(startIntent);
+                runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        //mEditText.setText( "" );
+                    }
+                });
             }
-
-        }
+        }).start();
     }
 }

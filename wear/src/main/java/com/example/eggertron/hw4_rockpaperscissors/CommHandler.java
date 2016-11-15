@@ -30,6 +30,7 @@ public class CommHandler implements DataApi.DataListener, GoogleApiClient.Connec
     static Handler UIHandler = null;
 
     public static final String CURRENT_COLOR_INDEX="current color";
+    private static final String START_ACTIVITY = "/start_activity";
 
 
     public CommHandler(final MainActivity mainActivity) {
@@ -71,6 +72,7 @@ public class CommHandler implements DataApi.DataListener, GoogleApiClient.Connec
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Wearable.DataApi.addListener(googleApiClient, this);
+        mainActivity.sendMessage(START_ACTIVITY, "", googleApiClient);
     }
 
     @Override
